@@ -1,4 +1,25 @@
-from typing import Iterable, Tuple, List
+from concurrent.futures import ThreadPoolExecutor
+from typing import Tuple, List
+
+
+def parallel_mergesort(x: List[int]) -> List[int]:
+    """WARNING :: This is a naive implementation. For sufficiently large len(x), ThreadPoolExecutor will fail to spawn
+    new threads and the function will crash (len(x) == 3899 on my machine). Author needs to investigate more stable
+    versions.
+
+    Identical to mergesort(), but uses multithreading for speed.
+    """
+    if x is None:
+        raise ValueError("List to sort cannot be None")
+    if len(x) < 2:
+        return x
+
+    left, right = _split(x)
+    with ThreadPoolExecutor(max_workers=len(x) // 2) as executor:
+        left_future = executor.submit(parallel_mergesort, left)
+        right_future = executor.submit(parallel_mergesort, right)
+
+        return _merge(left_future.result(), right_future.result())
 
 
 def mergesort(x: List[int]) -> List[int]:
